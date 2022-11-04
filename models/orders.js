@@ -12,7 +12,7 @@ const ordersSchema = new Schema(
       require: true,
     },
     phone: {
-      type: String,
+      type: Number,
       require: true,
     },
     pitchId: {

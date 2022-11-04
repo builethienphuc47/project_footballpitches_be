@@ -1,38 +1,77 @@
 const Users = require('../models/users')
 const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { errorFunction } = require('../utils/errorFunction');
+const securePassword = require('../utils/securePasword');
 
-const register = (req, res, next) => {
+const register = async (req, res, next) => {
+  // try {
+  //   bcrypt.hash(req.body.password, 10, function (err, hashedPass) {
+  //     if (err) {
+  //       res.json({
+  //         error: err,
+  //       })
+  //     }
+  //     const { name, email, phone, isAdmin } = req.body
+  //     let user = new Users({
+  //       name,
+  //       email,
+  //       phone,
+  //       isAdmin,
+  //       password: hashedPass,
+  //     })
+  //     user
+  //       .save()
+  //       .then((response) => {
+  //         res.json({
+  //           message: 'User Added Successfully!',
+  //         })
+  //       })
+  //       .catch((error) => {
+  //         res.status(400).json({ message: 'User Added Unsuccessfully!' })
+  //       })
+  //   })
+  // } catch (error) {
+  //   res.status(500).json({
+  //     message: 'An error Occurred!',
+  //   })
+  // }
+
   try {
-    bcrypt.hash(req.body.password, 10, function (err, hashedPass) {
-      if (err) {
-        res.json({
-          error: err,
-        })
+    const existingEmail = await Users.findOne({
+      email: req.body.email,
+    }).lean(true);
+
+    const exitingPhone = await Users.findOne({
+      phone: req.body.phone,
+    }).lean(true);
+
+    if (existingEmail || exitingPhone) {
+      res.status(403);
+      return res.json(errorFunction(true, 403, "User Already Exists"));
+    } else {
+      const hashedPassword = await securePassword(req.body.password);
+      const newUser = await Users.create({
+        name: req.body.name,
+        email: req.body.email,
+        isAdmin: req.body.isAdmin,
+        phone: req.body.phone,
+        password: hashedPassword
+      });
+      if (newUser) {
+          res.status(201)
+          return res.json(errorFunction(false, 201, 'User Created', newUser))
+      } else {
+        res.status(403)
+        return res.json(errorFunction(true, 403, 'Error Creating User'))
       }
-      const { name, email, phone, isAdmin } = req.body
-      let user = new Users({
-        name,
-        email,
-        phone,
-        isAdmin,
-        password: hashedPass,
-      })
-      user
-        .save()
-        .then((response) => {
-          res.json({
-            message: 'User Added Successfully!',
-          })
-        })
-        .catch((error) => {
-          res.status(400).json({ message: 'User Added Unsuccessfully!' })
-        })
-    })
+    }
   } catch (error) {
-    res.status(500).json({
-      message: 'An error Occurred!',
-    })
+    console.log("ERROR: ", error);
+    res.status(400);
+    return res.json(
+      errorFunction(true, 400, 'Error Adding user')
+    );
   }
 }
 
