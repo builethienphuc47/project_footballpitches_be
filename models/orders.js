@@ -12,7 +12,7 @@ const ordersSchema = new Schema(
       require: true,
     },
     phone: {
-      type: Number,
+      type: String,
       require: true,
     },
     pitchId: {
@@ -35,6 +35,12 @@ const ordersSchema = new Schema(
       type: String,
       require: true,
     },
+    
+    price: {
+      type: Number,
+      require: true,
+    },
+
     orderStatus: {
       type: Number,
       required: true,

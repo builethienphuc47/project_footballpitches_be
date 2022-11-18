@@ -55,7 +55,7 @@ const getOrdersByUserId = async (req, res) => {
 const getOrderById = (req, res) => {
   try {
     const id = req.params.id
-    Orders.findById(id).then((response) => {
+    Orders.findById(id).then((response) => {s
       res.json({
         response,
       })
@@ -69,6 +69,10 @@ const getOrderById = (req, res) => {
 
 const addOrder = async (req, res) => {
   try {
+    const {customerName, phone, timeOrder, dateOrder} = req.body;
+    if (!customerName || !phone || !timeOrder || !dateOrder){
+      res.status(400).json({message: 'Some field not null'})
+    }
     let order = new Orders(req.body)
     await order.save()
     await res.status(200).json({
